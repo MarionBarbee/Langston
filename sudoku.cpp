@@ -2219,7 +2219,10 @@ void checksumall(){
 	//auto gltime2=std::chrono::duration_cast<std::chrono::microseconds>(time).count()
 	auto gltime2 = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now().time_since_epoch()).count();
 	 auto gelapsedtime = gltime2 - gltime1;
+	 cout << "GLTIME2=" << gltime2 << endl;
+	 cout << "GLTIME1=" << gltime1 << endl;
 
+	 cout << "GELAPSEDTIME=" << gelapsedtime << endl;
 
 //	cout << endl;
 //cout << "*****************************************************" << endl;
@@ -8849,12 +8852,13 @@ void initp(){
 		creategtable();
 
 		initlastwrite();
-		
+		gltime1 = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+
 		procpuzzle();
-		writeinitialpuzzle();
+		//writeinitialpuzzle();
 
 		saveinitialpuzzle();	                         
-		updp();
+		//updp();
 
 	}
 
@@ -8873,7 +8877,7 @@ void initp(){
 		saveonce = 0;
 		//start_time = time(NULL);
 		// gltime1 = std::chrono::high_resolution_clock::now();
-		gltime1 = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now().time_since_epoch()).count();
+		//gltime1 = chrono::duration_cast<chrono::microseconds>(chrono::steady_clock::now().time_since_epoch()).count();
 		// start_time = chrono::high_resolution_clock::now();
 
 	}
@@ -9417,7 +9421,7 @@ int _tmain(){
 		saveinitialpuzzle();
 		savezcnt = zcnt;
 
-		writeinitialpuzzle();
+	//	writeinitialpuzzle();
 		stackptr = 0;
 		if (debug){
 			cout << "*************************************saving this puzzle" << endl;
@@ -9450,76 +9454,90 @@ int _tmain(){
 	}
 	int inserted = 0;
 	int tzcnt = zcnt;
+	bool procflag = false;
 	//debug = true;
 	while (true){
 		//	debug = true;
 		//===============================================
-		if (glerr){ popp(); }
-		//	if (!growinserted){
+	//	if (glerr){ popp(); }
+	//		if (!growinserted){
 		//		inserted = insertrow();
 		//	if (inserted > 0){
-		//		procp();
-		//		if (glerr){ popp(); }
-		//	}
-		//}
+			//	procp();
+			//	if (glerr){ popp(); }
+	//		}
+	//	}
 
 		int loopcnt = 0;
-		//	if (gtotalinsertedcount != ptrArow){
+			//if (gtotalinsertedcount < ptrArow){
 		while (true){
 			loopcnt++;
 			inserted = insertA();
 			if (inserted > 0){
 				procp();
 				if (!glerr){ break; }
+				popp();
+				loopcnt = 0;
+				inserted = 0;
 			}
 			if ((loopcnt > ptrArow) && (gtotalinsertedcount > 0)){ break; }
 			glerr = false;
 		}
-		//	}
+		//	}s
 		glerr = false;
 		//	if (glerr){ _tmain(); }
 	
 		inserted = finishrow(0);
-		if (glerr){ _tmain(); }
+		//if (glerr){ _tmain(); }
+		//glerr = false;
+		if (glerr){ popp(); }
 		if (inserted > 0){
 			procp();
-			if (glerr){ _tmain(); }
+		//	if (glerr){ _tmain(); }
+
+			if (glerr){ popp(); }
 		}
 		inserted = finishbox();
-		if (glerr){ _tmain(); }
-
-		if (inserted > 0){
-			procp();
-			if (glerr){ _tmain(); }
-
-		}
-		if (glerr){ _tmain(); }
-		inserted = finishcol(0);
-		if (glerr){ _tmain(); }
-
-		if (inserted > 0){
-			procp();
-			if (glerr){ _tmain(); }
-		}
 		//if (glerr){ _tmain(); }
-		//if (glerr){ popp(); }
-		inserted = 0;
-		if (glastrow != 0){ inserted = pickrow(glastrow); }
-	//	else{
-		//	int lowrow = getlowrow();
-		//	inserted = pickrow(lowrow);
-	//	}
-		glerr = false;
+
+		if (glerr){ popp(); }
 		if (inserted > 0){
 			procp();
-			if (glerr){ _tmain(); }
+			//if (glerr){ _tmain(); }
+
+			if (glerr){ popp(); }
+		}
+		 
+		inserted = finishcol(0);
+	//	if (glerr){ _tmain(); }
+
+		if (glerr){ popp(); }
+		if (inserted > 0){
+			procp();
+		//	if (glerr){ _tmain(); }
+
+			if (glerr){ popp(); }
+		}
+
+		inserted = 0;
+	//	if (glastrow != 0){ inserted = pickrow(glastrow); }
+		//else{
+			int lowrow = getlowrow();
+			inserted = pickrow(lowrow);
+		//}
+			if (glerr){ popp(); }
+		if (inserted > 0){
+			procp();
+			if (glerr){ popp(); }
 		}
 
 	
 
 		int lowcol = getlowcol();
 		inserted = pickcol(lowcol);
-		glerr = false;
+		if (glerr){ popp(); }
+
+		//glerr = false;
 		if (inserted > 0){
 			procp();
 			if (glerr){ popp(); }
@@ -10227,10 +10245,12 @@ int insertrow(){
 	//if (mcnt < 3){
 	//	int res=finishrow(r);
 	//	if (res > 0){ growinserted = true; return 1; }
-	//	return 0;
+	//	return res;
 	//}
+
 	while (true){
 		if (glerr){ popp(); }
+		
 		mcnt = gm(zrow, r);
 		if (mcnt == 0){ growinserted = true; return 1; }
 		blcnt = gbls(zrow, r);
@@ -10244,6 +10264,7 @@ int insertrow(){
 			glastwrite = "insertrow@@@@@@@@@@@@@";
 			inserted = inspuzzle(r, c, v);
 			if (glerr){ popp(); }
+			
 		}
 		if (row[r].done){
 			if (debug){
@@ -10251,6 +10272,7 @@ int insertrow(){
 				cout << "row filled! row= " << r << endl;
 				growinserted = true;
 			}
+		
 			break;
 		}
 	}
